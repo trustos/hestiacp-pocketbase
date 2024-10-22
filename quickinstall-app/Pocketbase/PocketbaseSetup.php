@@ -19,7 +19,7 @@ class PocketbaseSetup extends BaseSetup
     protected $pocketbasePaths;
     protected $pocketbaseUtils;
     protected $appInfo = [
-        "name" => "Pocketbase",
+        "name" => "PocketBase",
         "group" => "database",
         "enabled" => true,
         "version" => "1.0.0",
