@@ -58,18 +58,26 @@ class PocketbaseUtil
 
     public function downloadFile(string $url, string $destination)
     {
-        // We can't use wget directly, so we'll use PHP to download the file
-        $result = null;
-        $this->appcontext->runUser(
-            "v-run-cli-cmd",
-            [
-                "php",
-                "-r",
-                "file_put_contents('$destination', file_get_contents('$url'));",
-            ],
-            $result
+        $cmd = sprintf(
+            "curl -L -o %s %s",
+            escapeshellarg($destination),
+            escapeshellarg($url)
         );
-        return $result->code === 0;
+
+        $output = [];
+        $return_var = 0;
+        exec($cmd, $output, $return_var);
+
+        if ($return_var !== 0) {
+            $this->appcontext->runUser("v-log-action", [
+                "Error",
+                "Web",
+                "Failed to download file: " . implode("\n", $output),
+            ]);
+            return false;
+        }
+
+        return true;
     }
 
     public function unzipFile(string $zipFile, string $destination)
