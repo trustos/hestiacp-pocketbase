@@ -18,18 +18,7 @@ class PocketbaseUtil
         $result = null;
 
         if (!is_dir($dir)) {
-            exec("sudo mkdir -p " . escapeshellarg($dir), $output, $returnVar);
-            if ($returnVar !== 0) {
-                throw new \Exception("Failed to create directory: $dir");
-            }
-            exec(
-                "sudo chown " .
-                    escapeshellarg($this->appcontext->getUser()) .
-                    ":" .
-                    escapeshellarg($this->appcontext->getUser()) .
-                    " " .
-                    escapeshellarg($dir)
-            );
+            $this->appcontext->runUser("v-add-fs-directory", [$dir], $result);
         }
 
         return $result;

@@ -132,20 +132,13 @@ class PocketbaseSetup extends BaseSetup
 
     public function createAppDir()
     {
-        $appDir = $this->pocketbasePaths->getAppDir($this->domain);
-        $user = $this->appcontext->getUser();
-
-        $commands = [
-            "sudo mkdir -p " . escapeshellarg($appDir),
-            "sudo chown {$user}:{$user} " . escapeshellarg($appDir),
-            "sudo chmod 755 " . escapeshellarg($appDir),
-        ];
-
-        foreach ($commands as $command) {
-            exec($command, $output, $returnVar);
-            if ($returnVar !== 0) {
-                throw new \Exception("Failed to execute command: $command");
-            }
+        $appDir = $this->pocketbasePaths->createDir(
+            $this->pocketbasePaths->getAppDir($this->domain)
+        );
+        if ($result === null || (is_object($result) && $result->code !== 0)) {
+            throw new \Exception(
+                "Failed to create application directory for {$this->domain}"
+            );
         }
     }
 
