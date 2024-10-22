@@ -132,9 +132,11 @@ class PocketbaseSetup extends BaseSetup
 
     public function createAppDir()
     {
-        $this->pocketbaseUtils->createDir(
-            $this->pocketbasePaths->getAppDir($this->domain)
-        );
+        $appDir = $this->pocketbasePaths->getAppDir($this->domain);
+        $this->pocketbaseUtils->createDir($appDir);
+
+        // Add this line to set permissions using sudo
+        exec("sudo chmod 755 " . escapeshellarg($appDir));
     }
 
     public function createConfDir()
