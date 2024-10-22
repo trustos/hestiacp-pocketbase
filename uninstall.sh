@@ -33,8 +33,7 @@ sudo rm -rf /usr/local/hestia/web/src/app/WebApp/Installers/Pocketbase || handle
 echo -e "${START} Removed QuickInstall App ✅"
 
 # Remove Templates
-sudo rm /usr/local/hestia/data/templates/web/nginx/pocketbase*.tpl || handle_error "Failed to remove nginx templates"
-sudo rm /usr/local/hestia/data/templates/web/systemd/pocketbase.tpl || handle_error "Failed to remove systemd template"
+sudo rm /usr/local/hestia/data/templates/web/nginx/pocketbase*.tpl || handle_error "Failed to remove templates"
 echo -e "${START} Removed Templates ✅"
 
 echo -e "${GREEN}Uninstallation completed successfully!${ENDCOLOR}"

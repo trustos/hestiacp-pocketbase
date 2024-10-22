@@ -32,8 +32,7 @@ sudo cp -r quickinstall-app/Pocketbase /usr/local/hestia/web/src/app/WebApp/Inst
 echo -e "${START} Copy QuickInstall App ✅"
 
 # Copy Templates
-sudo cp templates/nginx/* /usr/local/hestia/data/templates/web/nginx || handle_error "Failed to copy nginx templates"
-sudo cp templates/systemd/* /usr/local/hestia/data/templates/web/systemd || handle_error "Failed to copy systemd templates"
+sudo cp templates/* /usr/local/hestia/data/templates/web/nginx || handle_error "Failed to copy templates"
 echo -e "${START} Copy Templates ✅"
 
 # Change permissions
