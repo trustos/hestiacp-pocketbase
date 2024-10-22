@@ -30,8 +30,15 @@ class PocketbaseSetup extends BaseSetup
         "form" => [
             "pocketbase_version" => [
                 "type" => "select",
-                "options" => ["v0.19.4", "v0.18.10", "v0.17.7"],
-                "value" => "v0.19.4",
+                "options" => [
+                    "v0.22.22",
+                    "v0.21.3",
+                    "v0.20.7",
+                    "v0.19.4",
+                    "v0.18.10",
+                    "v0.17.7",
+                ],
+                "value" => "v0.22.22",
             ],
             "port" => [
                 "type" => "text",
@@ -111,7 +118,7 @@ class PocketbaseSetup extends BaseSetup
 
         $configContent[] = "PORT=" . trim($options["port"] ?? "8090");
         $configContent[] =
-            "VERSION=" . trim($options["pocketbase_version"] ?? "v0.19.4");
+            "VERSION=" . trim($options["pocketbase_version"] ?? "v0.22.22");
 
         $config = implode("|", $configContent);
 
@@ -145,11 +152,23 @@ class PocketbaseSetup extends BaseSetup
 
     private function downloadPocketbase(array $options)
     {
-        $version = $options["pocketbase_version"] ?? "v0.19.4";
+        $version = $options["pocketbase_version"] ?? "v0.22.22";
+
+        // Determine system architecture
+        $arch = php_uname("m");
+        $osArch = "amd64"; // Default to amd64
+
+        if (
+            strpos($arch, "arm") !== false ||
+            strpos($arch, "aarch64") !== false
+        ) {
+            $osArch = "arm64";
+        }
+
         $url =
             "https://github.com/pocketbase/pocketbase/releases/download/{$version}/pocketbase_" .
             substr($version, 1) .
-            "_linux_amd64.zip";
+            "_linux_{$osArch}.zip";
 
         $zipFile = $this->pocketbasePaths->getAppDir(
             $this->domain,
