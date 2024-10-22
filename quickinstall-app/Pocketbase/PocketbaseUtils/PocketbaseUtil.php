@@ -16,12 +16,12 @@ class PocketbaseUtil
     public function createDir(string $dir)
     {
         $result = null;
-        $this->appcontext->runUser(
-            "v-run-cli-cmd",
-            ["mkdir", "-p", $dir],
-            $result
-        );
-        return $result->code === 0;
+
+        if (!is_dir($dir)) {
+            $this->appcontext->runUser("v-add-fs-directory", [$dir], $result);
+        }
+
+        return $result;
     }
 
     public function moveFile(string $fileA, string $fileB)
