@@ -132,7 +132,7 @@ class PocketbaseSetup extends BaseSetup
 
     public function createAppDir()
     {
-        $appDir = $this->pocketbasePaths->createDir(
+        $appDir = $this->pocketbaseUtils->createDir(
             $this->pocketbasePaths->getAppDir($this->domain)
         );
         if ($result === null || (is_object($result) && $result->code !== 0)) {
