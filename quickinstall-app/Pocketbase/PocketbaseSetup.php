@@ -150,23 +150,6 @@ class PocketbaseSetup extends BaseSetup
         );
     }
 
-    private function ensureDirectoryExists($path)
-    {
-        if (!is_dir($path)) {
-            if (!mkdir($path, 0755, true)) {
-                throw new \Exception("Failed to create directory: $path");
-            }
-        }
-
-        if (!is_writable($path)) {
-            if (!chmod($path, 0755)) {
-                throw new \Exception(
-                    "Failed to set write permissions on directory: $path"
-                );
-            }
-        }
-    }
-
     private function downloadPocketbase(array $options)
     {
         $version = $options["pocketbase_version"] ?? "v0.22.22";
@@ -189,7 +172,6 @@ class PocketbaseSetup extends BaseSetup
         error_log("Attempting to download PocketBase from: " . $url);
 
         $appDir = $this->pocketbasePaths->getAppDir($this->domain);
-        $this->ensureDirectoryExists($appDir);
 
         $zipFile = $appDir . "/pocketbase.zip";
 
