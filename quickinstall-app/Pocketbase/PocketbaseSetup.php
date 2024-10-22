@@ -173,12 +173,14 @@ class PocketbaseSetup extends BaseSetup
 
         $appDir = $this->pocketbasePaths->getAppDir($this->domain);
 
-        $zipFile = $appDir . "pocketbase.zip";
+        $zipFile = $appDir . "/pocketbase.zip";
 
-        $executable = $this->pocketbasePaths->getAppDir(
-            $this->domain,
-            "pocketbase"
-        );
+        $executable = $appDir . "/pocketbase";
+
+        // $executable = $this->pocketbasePaths->getAppDir(
+        //     $this->domain,
+        //     "pocketbase"
+        // );
 
         if (!$this->pocketbaseUtils->downloadFile($url, $zipFile)) {
             throw new \Exception("Failed to download Pocketbase");
