@@ -27,9 +27,19 @@ handle_error() {
     exit 1
 }
 
+# Check if QuickInstall App directory exists
+if [ ! -d "quickinstall-app/Pocketbase" ]; then
+    handle_error "PocketBase installer missing. Please ensure the 'quickinstall-app/Pocketbase' directory exists."
+fi
+
 # Copy QuickInstall App
 sudo cp -r quickinstall-app/Pocketbase /usr/local/hestia/web/src/app/WebApp/Installers/ || handle_error "Failed to copy QuickInstall App"
 echo -e "${START} Copy QuickInstall App ✅"
+
+# Check if templates directory exists
+if [ ! -d "templates" ]; then
+    handle_error "Templates directory missing. Please ensure the 'templates' directory exists."
+fi
 
 # Copy Templates
 sudo cp templates/* /usr/local/hestia/data/templates/web/nginx || handle_error "Failed to copy templates"
