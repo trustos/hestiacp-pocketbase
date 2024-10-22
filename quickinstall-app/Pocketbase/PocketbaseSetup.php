@@ -57,7 +57,6 @@ class PocketbaseSetup extends BaseSetup
     public function __construct($domain, HestiaApp $appcontext)
     {
         parent::__construct($domain, $appcontext);
-        $this->user = $appcontext->getUser();
 
         $this->pocketbasePaths = new PocketbasePaths($appcontext);
         $this->pocketbaseUtils = new PocketbaseUtil($appcontext);
