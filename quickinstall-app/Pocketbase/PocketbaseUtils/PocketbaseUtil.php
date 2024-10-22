@@ -16,12 +16,12 @@ class PocketbaseUtil
     public function createDir(string $dir)
     {
         $result = null;
-
-        if (!is_dir($dir)) {
-            $this->appcontext->runUser("v-add-fs-directory", [$dir], $result);
-        }
-
-        return $result;
+        $this->appcontext->runUser(
+            "v-run-cli-cmd",
+            ["mkdir", "-p", $dir],
+            $result
+        );
+        return $result->code === 0;
     }
 
     public function moveFile(string $fileA, string $fileB)
@@ -58,61 +58,47 @@ class PocketbaseUtil
 
     public function downloadFile(string $url, string $destination)
     {
-        $ch = curl_init($url);
-        $fp = fopen($destination, "wb");
-
-        if ($fp === false) {
-            throw new \Exception("Cannot open file for writing: $destination");
-        }
-
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-
-        $success = curl_exec($ch);
-
-        if ($success === false) {
-            $error = curl_error($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            fclose($fp);
-            throw new \Exception(
-                "Failed to download file (HTTP $httpCode): $error"
-            );
-        }
-
-        curl_close($ch);
-        fclose($fp);
-
-        if (!file_exists($destination) || filesize($destination) == 0) {
-            throw new \Exception(
-                "File download appears to have failed. File is missing or empty."
-            );
-        }
-
-        return true;
+        // We can't use wget directly, so we'll use PHP to download the file
+        $result = null;
+        $this->appcontext->runUser(
+            "v-run-cli-cmd",
+            [
+                "php",
+                "-r",
+                "file_put_contents('$destination', file_get_contents('$url'));",
+            ],
+            $result
+        );
+        return $result->code === 0;
     }
 
     public function unzipFile(string $zipFile, string $destination)
     {
-        $command =
-            "unzip -o " .
-            escapeshellarg($zipFile) .
-            " -d " .
-            escapeshellarg($destination);
-        exec($command, $output, $returnVar);
-        return $returnVar === 0;
+        $result = null;
+        $this->appcontext->runUser(
+            "v-run-cli-cmd",
+            ["unzip", "-o", $zipFile, "-d", $destination],
+            $result
+        );
+        return $result->code === 0;
     }
 
     public function deleteFile(string $file)
     {
-        return unlink($file);
+        $result = null;
+        $this->appcontext->runUser("v-delete-fs-file", [$file], $result);
+        return $result->code === 0;
     }
 
     public function makeExecutable(string $file)
     {
-        return chmod($file, 0755);
+        $result = null;
+        $this->appcontext->runUser(
+            "v-change-fs-file-permission",
+            [$file, "0755"],
+            $result
+        );
+        return $result->code === 0;
     }
 
     public function reloadSystemd()
