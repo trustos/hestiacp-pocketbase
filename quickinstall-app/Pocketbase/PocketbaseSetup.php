@@ -169,6 +169,7 @@ class PocketbaseSetup extends BaseSetup
             "https://github.com/pocketbase/pocketbase/releases/download/{$version}/pocketbase_" .
             substr($version, 1) .
             "_linux_{$osArch}.zip";
+        error_log("Attempting to download PocketBase from: " . $url);
 
         $zipFile = $this->pocketbasePaths->getAppDir(
             $this->domain,

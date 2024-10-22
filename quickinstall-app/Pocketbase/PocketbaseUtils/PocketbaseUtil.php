@@ -58,13 +58,40 @@ class PocketbaseUtil
 
     public function downloadFile(string $url, string $destination)
     {
-        $command =
-            "curl -L -o " .
-            escapeshellarg($destination) .
-            " " .
-            escapeshellarg($url);
-        exec($command, $output, $returnVar);
-        return $returnVar === 0;
+        $ch = curl_init($url);
+        $fp = fopen($destination, "wb");
+
+        if ($fp === false) {
+            throw new \Exception("Cannot open file for writing: $destination");
+        }
+
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+
+        $success = curl_exec($ch);
+
+        if ($success === false) {
+            $error = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            fclose($fp);
+            throw new \Exception(
+                "Failed to download file (HTTP $httpCode): $error"
+            );
+        }
+
+        curl_close($ch);
+        fclose($fp);
+
+        if (!file_exists($destination) || filesize($destination) == 0) {
+            throw new \Exception(
+                "File download appears to have failed. File is missing or empty."
+            );
+        }
+
+        return true;
     }
 
     public function unzipFile(string $zipFile, string $destination)
