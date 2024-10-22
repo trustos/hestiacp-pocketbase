@@ -66,17 +66,33 @@ class PocketbaseUtil
 
         $output = [];
         $return_var = 0;
-        exec($cmd, $output, $return_var);
+        exec($cmd . " 2>&1", $output, $return_var);
 
         if ($return_var !== 0) {
+            $error_message =
+                "Failed to download file. Command: $cmd\nOutput: " .
+                implode("\n", $output);
             $this->appcontext->runUser("v-log-action", [
                 "Error",
                 "Web",
-                "Failed to download file: " . implode("\n", $output),
+                $error_message,
             ]);
+            error_log($error_message);
             return false;
         }
 
+        if (!file_exists($destination) || filesize($destination) == 0) {
+            $error_message = "File download appears to have failed. File does not exist or is empty: $destination";
+            $this->appcontext->runUser("v-log-action", [
+                "Error",
+                "Web",
+                $error_message,
+            ]);
+            error_log($error_message);
+            return false;
+        }
+
+        error_log("File successfully downloaded to: $destination");
         return true;
     }
 
