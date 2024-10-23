@@ -197,7 +197,6 @@ class PocketbaseSetup extends BaseSetup
             throw new \Exception("Failed to download Pocketbase");
         }
 
-        // Move the temporary file to the final location
         try {
             $moveResult = $this->pocketbaseUtils->moveFile(
                 $tempZipFile,
@@ -207,12 +206,24 @@ class PocketbaseSetup extends BaseSetup
                 throw new \Exception("Move operation failed");
             }
         } catch (\Exception $e) {
+            error_log(
+                "Failed to move Pocketbase zip file. Error: " . $e->getMessage()
+            );
+            error_log(
+                "Temp file exists: " .
+                    (file_exists($tempZipFile) ? "Yes" : "No")
+            );
+            error_log(
+                "Temp file size: " .
+                    (file_exists($tempZipFile) ? filesize($tempZipFile) : "N/A")
+            );
+            error_log(
+                "Destination directory writable: " .
+                    (is_writable(dirname($finalZipFile)) ? "Yes" : "No")
+            );
             unlink($tempZipFile); // Clean up the temporary file
             throw new \Exception(
-                "Failed to move Pocketbase zip file: " .
-                    $e->getMessage() .
-                    ". Move result: " .
-                    print_r($moveResult, true)
+                "Failed to move Pocketbase zip file: " . $e->getMessage()
             );
         }
 

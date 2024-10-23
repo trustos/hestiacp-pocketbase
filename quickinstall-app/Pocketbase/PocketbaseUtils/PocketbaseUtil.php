@@ -26,8 +26,6 @@ class PocketbaseUtil
 
     public function moveFile(string $fileA, string $fileB)
     {
-        $result = null;
-
         if (!file_exists($fileA)) {
             throw new \Exception("Source file does not exist: $fileA");
         }
@@ -41,19 +39,8 @@ class PocketbaseUtil
             }
         }
 
-        if (
-            !$this->appcontext->runUser(
-                "v-move-fs-file",
-                [$fileA, $fileB],
-                $result
-            )
-        ) {
-            $errorDetails = is_object($result)
-                ? print_r($result, true)
-                : "No error details available";
-            throw new \Exception(
-                "Error moving file from $fileA to $fileB. Details: $errorDetails"
-            );
+        if (!rename($fileA, $fileB)) {
+            throw new \Exception("Failed to move file from $fileA to $fileB");
         }
 
         if (!file_exists($fileB)) {
@@ -62,7 +49,7 @@ class PocketbaseUtil
             );
         }
 
-        return $result;
+        return true;
     }
 
     public function parseTemplate($template, $search, $replace): array
