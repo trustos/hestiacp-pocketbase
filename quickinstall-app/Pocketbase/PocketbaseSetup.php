@@ -79,7 +79,17 @@ class PocketbaseSetup extends BaseSetup
             $this->createAppDir();
             $this->downloadPocketbase($options);
             $this->createConfDir();
-            $this->createSystemdService($options);
+            // $this->createSystemdService($options);
+            // Example usage
+            $domain = $this->domain;
+            $user = $this->user;
+            $appPath = $this->pocketbasePaths->getAppDir($this->domain);
+
+            if (this->createServiceFile($domain, $user, $appPath)) {
+                echo "Service file creation successful.\n";
+            } else {
+                echo "Service file creation failed.\n";
+            }
             $this->createAppProxyTemplates($options);
             $this->createAppConfig($options);
             $this->startPocketbaseService();
@@ -245,27 +255,63 @@ class PocketbaseSetup extends BaseSetup
         $this->pocketbaseUtils->deleteFile($finalZipFile);
     }
 
-    private function createSystemdService(array $options)
+    function generateServiceFileContent($domain, $user, $appPath)
     {
-        $templateReplaceVars = [
-            $this->domain,
-            $this->pocketbasePaths->getAppDir($this->domain),
-            $this->appcontext->user(),
-        ];
+        return "[Unit]
+    Description=PocketBase service for $domain
+    After=network.target
 
-        $data = $this->pocketbaseUtils->parseTemplate(
-            $this->pocketbasePaths->getPocketbaseSystemdTemplate(),
-            self::TEMPLATE_SYSTEMD_VARS,
-            $templateReplaceVars
-        );
-        $tmpFile = $this->saveTempFile(implode($data));
+    [Service]
+    Type=simple
+    User=$user
+    WorkingDirectory=$appPath
+    ExecStart=$appPath/pocketbase serve --http=$domain:8090
+    Restart=on-failure
 
-        $serviceName = "pocketbase-{$this->domain}.service";
-        $serviceFile = "/etc/systemd/system/{$serviceName}";
-
-        $this->pocketbaseUtils->moveFile($tmpFile, $serviceFile);
-        $this->pocketbaseUtils->reloadSystemd();
+    [Install]
+    WantedBy=multi-user.target
+    ";
     }
+
+    // Function to create the service file
+    function createServiceFile($domain, $user, $appPath)
+    {
+        $serviceFileName = "pocketbase-$domain.service";
+        $servicePath = "/etc/systemd/system/$serviceFileName";
+
+        $content = $this->generateServiceFileContent($domain, $user, $appPath);
+
+        // Use file_put_contents to write the content directly
+        if (file_put_contents($servicePath, $content) !== false) {
+            echo "Service file created successfully at $servicePath\n";
+            return true;
+        } else {
+            echo "Failed to create service file at $servicePath\n";
+            return false;
+        }
+    }
+
+    // private function createSystemdService(array $options)
+    // {
+    //     $templateReplaceVars = [
+    //         $this->domain,
+    //         $this->pocketbasePaths->getAppDir($this->domain),
+    //         $this->appcontext->user(),
+    //     ];
+
+    //     $data = $this->pocketbaseUtils->parseTemplate(
+    //         $this->pocketbasePaths->getPocketbaseSystemdTemplate(),
+    //         self::TEMPLATE_SYSTEMD_VARS,
+    //         $templateReplaceVars
+    //     );
+    //     $tmpFile = $this->saveTempFile(implode($data));
+
+    //     $serviceName = "pocketbase-{$this->domain}.service";
+    //     $serviceFile = "/etc/systemd/system/{$serviceName}";
+
+    //     $this->pocketbaseUtils->moveFile($tmpFile, $serviceFile);
+    //     $this->pocketbaseUtils->reloadSystemd();
+    // }
 
     private function startPocketbaseService()
     {
