@@ -106,7 +106,7 @@ class PocketbaseSetup extends BaseSetup
 
     public function createAppProxyTemplates(array $options = null)
     {
-        $tplReplace = [trim($options["port"])];
+        $tplReplace = [trim($options["port"] ?? "8090")];
 
         $proxyData = $this->pocketbaseUtils->parseTemplate(
             $this->pocketbasePaths->getPocketbaseProxyTemplate(),
