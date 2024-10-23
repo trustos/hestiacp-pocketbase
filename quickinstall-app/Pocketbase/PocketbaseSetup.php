@@ -172,30 +172,29 @@ class PocketbaseSetup extends BaseSetup
         error_log("Attempting to download PocketBase from: " . $url);
 
         $appDir = $this->pocketbasePaths->getAppDir($this->domain);
+        $finalZipFile = $appDir . "/pocketbase.zip";
+        $executable = $appDir . "/pocketbase";
 
-        $zipFile = $appDir . "pocketbase.zip";
-
-        $executable = $appDir . "pocketbase";
-
-        // $executable = $this->pocketbasePaths->getAppDir(
-        //     $this->domain,
-        //     "pocketbase"
-        // );
-
-        if (!$this->pocketbaseUtils->downloadFile($url, $zipFile)) {
+        // Download to a temporary file
+        $tempZipFile = $this->saveTempFile("");
+        if (!$this->pocketbaseUtils->downloadFile($url, $tempZipFile)) {
             throw new \Exception("Failed to download Pocketbase");
         }
 
-        if (
-            !$this->pocketbaseUtils->unzipFile(
-                $zipFile,
-                $this->pocketbasePaths->getAppDir($this->domain)
-            )
-        ) {
+        // Move the temporary file to the final location
+        try {
+            $this->pocketbaseUtils->moveFile($tempZipFile, $finalZipFile);
+        } catch (\Exception $e) {
+            throw new \Exception(
+                "Failed to move Pocketbase zip file: " . $e->getMessage()
+            );
+        }
+
+        if (!$this->pocketbaseUtils->unzipFile($finalZipFile, $appDir)) {
             throw new \Exception("Failed to unzip Pocketbase");
         }
 
-        $this->pocketbaseUtils->deleteFile($zipFile);
+        $this->pocketbaseUtils->deleteFile($finalZipFile);
         $this->pocketbaseUtils->makeExecutable($executable);
     }
 
