@@ -88,7 +88,8 @@ class PocketbaseSetup extends BaseSetup
             $this->appcontext->runUser("v-log-action", [
                 "Error",
                 "Web",
-                "Failed to perform Pocketbase installation for {$this->domain}: " . $e->getMessage(),
+                "Failed to perform Pocketbase installation for {$this->domain}: " .
+                $e->getMessage(),
             ]);
             throw $e;
         }
@@ -208,7 +209,7 @@ class PocketbaseSetup extends BaseSetup
         );
         if (!$moveResult) {
             throw new \Exception("Failed to move Pocketbase zip file");
-        // }
+        }
 
         // try {
         //     $moveResult = $this->pocketbaseUtils->moveFile(
