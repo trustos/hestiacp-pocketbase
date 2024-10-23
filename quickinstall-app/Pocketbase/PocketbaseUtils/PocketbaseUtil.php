@@ -26,30 +26,21 @@ class PocketbaseUtil
 
     public function moveFile(string $fileA, string $fileB)
     {
-        if (!file_exists($fileA)) {
-            throw new \Exception("Source file does not exist: $fileA");
-        }
+        $result = null;
 
-        $destDir = dirname($fileB);
-        if (!is_dir($destDir)) {
-            if (!$this->createDir($destDir)) {
-                throw new \Exception(
-                    "Failed to create destination directory: $destDir"
-                );
-            }
-        }
-
-        if (!rename($fileA, $fileB)) {
-            throw new \Exception("Failed to move file from $fileA to $fileB");
-        }
-
-        if (!file_exists($fileB)) {
+        if (
+            !$this->appcontext->runUser(
+                "v-move-fs-file",
+                [$fileA, $fileB],
+                $result
+            )
+        ) {
             throw new \Exception(
-                "File not found at destination after move: $fileB"
+                "Error updating file in: " . $fileA . " " . $result->text
             );
         }
 
-        return true;
+        return $result;
     }
 
     public function parseTemplate($template, $search, $replace): array
