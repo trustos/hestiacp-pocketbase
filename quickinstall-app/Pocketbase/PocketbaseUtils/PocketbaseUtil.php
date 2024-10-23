@@ -58,15 +58,11 @@ class PocketbaseUtil
 
     public function downloadFile(string $url, string $destination)
     {
-        $cmd = sprintf(
-            "curl -L -o %s %s",
-            escapeshellarg($destination),
-            escapeshellarg($url)
-        );
+        $cmd = sprintf("curl -L -s %s", escapeshellarg($url));
 
         $output = [];
         $return_var = 0;
-        exec($cmd . " 2>&1", $output, $return_var);
+        exec($cmd, $output, $return_var);
 
         if ($return_var !== 0) {
             $error_message =
@@ -81,8 +77,10 @@ class PocketbaseUtil
             return false;
         }
 
-        if (!file_exists($destination) || filesize($destination) == 0) {
-            $error_message = "File download appears to have failed. File does not exist or is empty: $destination";
+        $content = implode("\n", $output);
+        if (empty($content)) {
+            $error_message =
+                "File download appears to have failed. Content is empty.";
             $this->appcontext->runUser("v-log-action", [
                 "Error",
                 "Web",
@@ -92,8 +90,8 @@ class PocketbaseUtil
             return false;
         }
 
-        error_log("File successfully downloaded to: $destination");
-        return true;
+        error_log("File successfully downloaded");
+        return $content;
     }
 
     public function unzipFile(string $zipFile, string $destination)

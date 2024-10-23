@@ -135,11 +135,6 @@ class PocketbaseSetup extends BaseSetup
         $this->pocketbaseUtils->createDir(
             $this->pocketbasePaths->getAppDir($this->domain)
         );
-
-        $this->appcontext->runUser("v-change-fs-file-permission", [
-            $this->pocketbasePaths->getAppDir($this->domain),
-            "0755",
-        ]);
     }
 
     public function createConfDir()
@@ -161,10 +156,14 @@ class PocketbaseSetup extends BaseSetup
 
         // Determine system architecture
         $arch = php_uname("m");
-        $osArch =
-            strpos($arch, "arm") !== false || strpos($arch, "aarch64") !== false
-                ? "arm64"
-                : "amd64";
+        $osArch = "amd64"; // Default to amd64
+
+        if (
+            strpos($arch, "arm") !== false ||
+            strpos($arch, "aarch64") !== false
+        ) {
+            $osArch = "arm64";
+        }
 
         $url =
             "https://github.com/pocketbase/pocketbase/releases/download/{$version}/pocketbase_" .
@@ -173,8 +172,8 @@ class PocketbaseSetup extends BaseSetup
         error_log("Attempting to download PocketBase from: " . $url);
 
         $appDir = $this->pocketbasePaths->getAppDir($this->domain);
-        $finalZipFile = $appDir . "/pocketbase.zip";
-        $executable = $appDir . "/pocketbase";
+        $finalZipFile = $appDir . "pocketbase.zip";
+        $executable = $appDir . "pocketbase";
 
         // Ensure the app directory exists
         if (!is_dir($appDir)) {
@@ -185,18 +184,14 @@ class PocketbaseSetup extends BaseSetup
             }
         }
 
-        // Download to a temporary file
-        $tempZipContent = file_get_contents($url);
-        if ($tempZipContent === false) {
+        // Download the file content
+        $fileContent = $this->pocketbaseUtils->downloadFile($url, "");
+        if ($fileContent === false) {
             throw new \Exception("Failed to download Pocketbase");
         }
 
-        $tempZipFile = $this->saveTempFile($tempZipContent);
-        if ($tempZipFile === false) {
-            throw new \Exception(
-                "Failed to save downloaded content to temporary file"
-            );
-        }
+        // Save the content to a temporary file using the existing saveTempFile method
+        $tempZipFile = $this->saveTempFile($fileContent);
 
         try {
             $moveResult = $this->pocketbaseUtils->moveFile(
@@ -220,10 +215,9 @@ class PocketbaseSetup extends BaseSetup
             );
             error_log(
                 "Destination directory writable: " .
-                    (is_writable(dirname($finalZipFile)) ? "Yes" : "No") .
-                    " File destination: " .
-                    $finalZipFile
+                    (is_writable(dirname($finalZipFile)) ? "Yes" : "No")
             );
+            $this->pocketbaseUtils->deleteFile($tempZipFile); // Clean up the temporary file
             throw new \Exception(
                 "Failed to move Pocketbase zip file: " . $e->getMessage()
             );
