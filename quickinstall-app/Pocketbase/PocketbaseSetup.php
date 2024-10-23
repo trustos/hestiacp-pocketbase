@@ -75,23 +75,23 @@ class PocketbaseSetup extends BaseSetup
 
     private function performInstallation(array $options)
     {
-        try {
-            $this->createAppDir();
-            $this->downloadPocketbase($options);
-            $this->createConfDir();
-            $this->createSystemdService($options);
-            $this->createAppProxyTemplates($options);
-            $this->createAppConfig($options);
-            $this->startPocketbaseService();
-        } catch (\Exception $e) {
-            $this->appcontext->runUser("v-log-action", [
-                "Error",
-                "Web",
-                "Failed to perform Pocketbase installation for {$this->domain}: " .
-                $e->getMessage(),
-            ]);
-            throw $e;
-        }
+        // try {
+        $this->createAppDir();
+        $this->downloadPocketbase($options);
+        $this->createConfDir();
+        $this->createSystemdService($options);
+        $this->createAppProxyTemplates($options);
+        $this->createAppConfig($options);
+        $this->startPocketbaseService();
+        // } catch (\Exception $e) {
+        //     $this->appcontext->runUser("v-log-action", [
+        //         "Error",
+        //         "Web",
+        //         "Failed to perform Pocketbase installation for {$this->domain}: " .
+        //         $e->getMessage(),
+        //     ]);
+        //     throw $e;
+        // }
     }
 
     public function createAppProxyTemplates(array $options = null)

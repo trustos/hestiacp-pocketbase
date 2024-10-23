@@ -23,7 +23,6 @@ class PocketbaseUtil
 
         return $result;
     }
-
     public function moveFile(string $fileA, string $fileB)
     {
         $result = null;
