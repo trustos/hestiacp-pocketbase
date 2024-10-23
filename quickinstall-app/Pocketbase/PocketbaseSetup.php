@@ -175,6 +175,15 @@ class PocketbaseSetup extends BaseSetup
         $finalZipFile = $appDir . "/pocketbase.zip";
         $executable = $appDir . "/pocketbase";
 
+        // Ensure the app directory exists
+        if (!is_dir($appDir)) {
+            if (!$this->pocketbaseUtils->createDir($appDir)) {
+                throw new \Exception(
+                    "Failed to create application directory: $appDir"
+                );
+            }
+        }
+
         // Create a temporary file with a real path
         $tempZipFile = tempnam(sys_get_temp_dir(), "pocketbase_download_");
         if (!$tempZipFile) {
@@ -190,11 +199,26 @@ class PocketbaseSetup extends BaseSetup
 
         // Move the temporary file to the final location
         try {
-            $this->pocketbaseUtils->moveFile($tempZipFile, $finalZipFile);
+            $moveResult = $this->pocketbaseUtils->moveFile(
+                $tempZipFile,
+                $finalZipFile
+            );
+            if ($moveResult === false) {
+                throw new \Exception("Move operation failed");
+            }
         } catch (\Exception $e) {
             unlink($tempZipFile); // Clean up the temporary file
             throw new \Exception(
-                "Failed to move Pocketbase zip file: " . $e->getMessage()
+                "Failed to move Pocketbase zip file: " .
+                    $e->getMessage() .
+                    ". Move result: " .
+                    print_r($moveResult, true)
+            );
+        }
+
+        if (!file_exists($finalZipFile)) {
+            throw new \Exception(
+                "Zip file not found at destination after move: $finalZipFile"
             );
         }
 

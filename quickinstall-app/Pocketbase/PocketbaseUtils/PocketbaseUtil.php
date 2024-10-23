@@ -28,6 +28,19 @@ class PocketbaseUtil
     {
         $result = null;
 
+        if (!file_exists($fileA)) {
+            throw new \Exception("Source file does not exist: $fileA");
+        }
+
+        $destDir = dirname($fileB);
+        if (!is_dir($destDir)) {
+            if (!$this->createDir($destDir)) {
+                throw new \Exception(
+                    "Failed to create destination directory: $destDir"
+                );
+            }
+        }
+
         if (
             !$this->appcontext->runUser(
                 "v-move-fs-file",
@@ -35,8 +48,17 @@ class PocketbaseUtil
                 $result
             )
         ) {
+            $errorDetails = is_object($result)
+                ? print_r($result, true)
+                : "No error details available";
             throw new \Exception(
-                "Error updating file in: " . $fileA . " " . $result->text
+                "Error moving file from $fileA to $fileB. Details: $errorDetails"
+            );
+        }
+
+        if (!file_exists($fileB)) {
+            throw new \Exception(
+                "File not found at destination after move: $fileB"
             );
         }
 
