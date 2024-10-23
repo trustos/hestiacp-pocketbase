@@ -101,20 +101,18 @@ class PocketbaseUtil
             return false;
         }
 
-        $zip = new \ZipArchive();
-        $res = $zip->open($zipFile);
-        if ($res !== true) {
-            error_log("Failed to open zip file. Error code: $res");
+        $result = null;
+        $this->appcontext->runUser(
+            "v-run-cli-cmd",
+            ["tar", "-xzf", $zipFile, "-C", $destination],
+            $result
+        );
+
+        if ($result->code !== 0) {
+            error_log("Unzip failed. Output: " . $result->text);
             return false;
         }
 
-        if (!$zip->extractTo($destination)) {
-            error_log("Failed to extract zip contents to $destination");
-            $zip->close();
-            return false;
-        }
-
-        $zip->close();
         return true;
     }
 
