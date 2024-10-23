@@ -18,53 +18,10 @@ class PocketbaseUtil
         $result = null;
 
         if (!is_dir($dir)) {
-            $this->appcontext->runUser("v-log-action", [
-                "Info",
-                "System",
-                "Attempting to create directory: $dir",
-            ]);
             $this->appcontext->runUser("v-add-fs-directory", [$dir], $result);
-
-            // Check if $result is an object and has the necessary properties
-            if (
-                is_object($result) &&
-                property_exists($result, "text") &&
-                property_exists($result, "code")
-            ) {
-                $output = $result->text;
-                $return_var = $result->code;
-            } else {
-                // Handle unexpected result format
-                $output = is_string($result) ? $result : print_r($result, true);
-                $return_var = 1; // Assume failure if we can't determine the actual return code
-            }
-
-            if (
-                $return_var !== 0 ||
-                (is_string($output) && strpos($output, "Error:") !== false)
-            ) {
-                $this->appcontext->runUser("v-log-action", [
-                    "Error",
-                    "System",
-                    "Failed to create directory: $dir. Output: $output",
-                ]);
-                return false;
-            } else {
-                $this->appcontext->runUser("v-log-action", [
-                    "Info",
-                    "System",
-                    "Successfully created directory: $dir",
-                ]);
-            }
-        } else {
-            $this->appcontext->runUser("v-log-action", [
-                "Info",
-                "System",
-                "Directory already exists: $dir",
-            ]);
         }
 
-        return true;
+        return $result;
     }
 
     public function moveFile(string $fileA, string $fileB)
