@@ -173,7 +173,7 @@ class PocketbaseSetup extends BaseSetup
 
         $appDir = $this->pocketbasePaths->getAppDir($this->domain);
 
-        $zipFile = $appDir . "/pocketbase.zip";
+        $zipFile = $appDir . "pocketbase.zip";
 
         $executable = $appDir . "pocketbase";
 
