@@ -137,13 +137,18 @@ class PocketbaseUtil
     public function unzipFile(string $zipFile, string $destination)
     {
         $result = null;
-        $this->appcontext->runUser(
-            "v-run-cli-cmd",
-            ["unzip", "-o", $zipFile, "-d", $destination],
-            $result
+        $command = sprintf(
+            "cd %s && unzip -o %s",
+            escapeshellarg(dirname($zipFile)),
+            escapeshellarg(basename($zipFile))
         );
+
+        $this->appcontext->runUser("v-run-cli-cmd", [$command], $result);
+
         if ($result->code !== 0) {
-            error_log("Unzip failed. Output: " . $result->text);
+            error_log(
+                "Unzip failed. Command: $command, Output: " . $result->text
+            );
             return false;
         }
         return true;

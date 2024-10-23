@@ -227,21 +227,11 @@ class PocketbaseSetup extends BaseSetup
         $zipSize = filesize($finalZipFile);
         error_log("Zip file size: $zipSize bytes");
 
-        // Use PHP's ZipArchive to extract
-        $zip = new \ZipArchive();
-        $res = $zip->open($finalZipFile);
-        if ($res !== true) {
-            error_log("Failed to open zip file. Error code: $res");
-            throw new \Exception("Failed to open Pocketbase zip file");
+        // Unzip the file
+        if (!$this->pocketbaseUtils->unzipFile($finalZipFile, $appDir)) {
+            error_log("Failed to unzip file: $finalZipFile");
+            throw new \Exception("Failed to unzip Pocketbase");
         }
-
-        if (!$zip->extractTo($appDir)) {
-            error_log("Failed to extract zip contents to $appDir");
-            $zip->close();
-            throw new \Exception("Failed to extract Pocketbase");
-        }
-
-        $zip->close();
 
         if (!file_exists($executable)) {
             throw new \Exception(
@@ -251,7 +241,7 @@ class PocketbaseSetup extends BaseSetup
 
         $this->pocketbaseUtils->makeExecutable($executable);
 
-        // Only delete the zip file if everything was successful
+        // Clean up
         $this->pocketbaseUtils->deleteFile($finalZipFile);
     }
 
