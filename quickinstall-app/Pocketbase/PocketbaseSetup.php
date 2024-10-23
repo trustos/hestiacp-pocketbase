@@ -92,7 +92,7 @@ class PocketbaseSetup extends BaseSetup
             }
             $this->createAppProxyTemplates($options);
             $this->createAppConfig($options);
-            $this->startPocketbaseService();
+            // $this->startPocketbaseService();
         } catch (\Exception $e) {
             $this->appcontext->runUser("v-log-action", [
                 "Error",
@@ -281,7 +281,7 @@ class PocketbaseSetup extends BaseSetup
         $result = null;
         $this->appcontext->runUser(
             "v-add-pocketbase-service",
-            [$user, $domain, $port],
+            [$domain, $port],
             $result
         );
 
@@ -316,10 +316,10 @@ class PocketbaseSetup extends BaseSetup
     //     $this->pocketbaseUtils->reloadSystemd();
     // }
 
-    private function startPocketbaseService()
-    {
-        $serviceName = "pocketbase-{$this->domain}";
-        $this->pocketbaseUtils->startService($serviceName);
-        $this->pocketbaseUtils->enableService($serviceName);
-    }
+    // private function startPocketbaseService()
+    // {
+    //     $serviceName = "pocketbase-{$this->domain}";
+    //     $this->pocketbaseUtils->startService($serviceName);
+    //     $this->pocketbaseUtils->enableService($serviceName);
+    // }
 }

@@ -167,21 +167,21 @@ class PocketbaseUtil
         return $result->code === 0;
     }
 
-    public function reloadSystemd()
-    {
-        exec("sudo systemctl daemon-reload", $output, $returnVar);
-        return $returnVar === 0;
-    }
+    // public function reloadSystemd()
+    // {
+    //     exec("sudo systemctl daemon-reload", $output, $returnVar);
+    //     return $returnVar === 0;
+    // }
 
-    public function startService(string $serviceName)
-    {
-        exec("sudo systemctl start $serviceName", $output, $returnVar);
-        return $returnVar === 0;
-    }
+    // public function startService(string $serviceName)
+    // {
+    //     exec("sudo systemctl start $serviceName", $output, $returnVar);
+    //     return $returnVar === 0;
+    // }
 
-    public function enableService(string $serviceName)
-    {
-        exec("sudo systemctl enable $serviceName", $output, $returnVar);
-        return $returnVar === 0;
-    }
+    // public function enableService(string $serviceName)
+    // {
+    //     exec("sudo systemctl enable $serviceName", $output, $returnVar);
+    //     return $returnVar === 0;
+    // }
 }
