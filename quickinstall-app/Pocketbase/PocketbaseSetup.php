@@ -175,9 +175,16 @@ class PocketbaseSetup extends BaseSetup
         $finalZipFile = $appDir . "/pocketbase.zip";
         $executable = $appDir . "/pocketbase";
 
-        // Download to a temporary file
-        $tempZipFile = $this->saveTempFile("");
+        // Create a temporary file with a real path
+        $tempZipFile = tempnam(sys_get_temp_dir(), "pocketbase_download_");
+        if (!$tempZipFile) {
+            throw new \Exception(
+                "Failed to create temporary file for download"
+            );
+        }
+
         if (!$this->pocketbaseUtils->downloadFile($url, $tempZipFile)) {
+            unlink($tempZipFile); // Clean up the temporary file
             throw new \Exception("Failed to download Pocketbase");
         }
 
@@ -185,6 +192,7 @@ class PocketbaseSetup extends BaseSetup
         try {
             $this->pocketbaseUtils->moveFile($tempZipFile, $finalZipFile);
         } catch (\Exception $e) {
+            unlink($tempZipFile); // Clean up the temporary file
             throw new \Exception(
                 "Failed to move Pocketbase zip file: " . $e->getMessage()
             );
