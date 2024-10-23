@@ -112,42 +112,42 @@ class PocketbaseUtil
         return $content;
     }
 
-    public function unzipFile(string $zipFile, string $destination)
-    {
-        if (!file_exists($zipFile)) {
-            error_log("Zip file does not exist: $zipFile");
-            return false;
-        }
-
-        $result = null;
-        $this->appcontext->runUser(
-            "v-run-cli-cmd",
-            ["tar", "-xzf", $zipFile, "-C", $destination],
-            $result
-        );
-
-        if ($result->code !== 0) {
-            error_log("Unzip failed. Output: " . $result->text);
-            return false;
-        }
-
-        return true;
-    }
-
     // public function unzipFile(string $zipFile, string $destination)
     // {
+    //     if (!file_exists($zipFile)) {
+    //         error_log("Zip file does not exist: $zipFile");
+    //         return false;
+    //     }
+
     //     $result = null;
     //     $this->appcontext->runUser(
     //         "v-run-cli-cmd",
-    //         ["unzip", "-o", $zipFile, "-d", $destination],
+    //         ["tar", "-xzf", $zipFile, "-C", $destination],
     //         $result
     //     );
+
     //     if ($result->code !== 0) {
     //         error_log("Unzip failed. Output: " . $result->text);
     //         return false;
     //     }
+
     //     return true;
     // }
+
+    public function unzipFile(string $zipFile, string $destination)
+    {
+        $result = null;
+        $this->appcontext->runUser(
+            "v-run-cli-cmd",
+            ["unzip", "-o", $zipFile, "-d", $destination],
+            $result
+        );
+        if ($result->code !== 0) {
+            error_log("Unzip failed. Output: " . $result->text);
+            return false;
+        }
+        return true;
+    }
 
     public function deleteFile(string $file)
     {
