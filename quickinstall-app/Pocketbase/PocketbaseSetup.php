@@ -85,7 +85,7 @@ class PocketbaseSetup extends BaseSetup
             $user = $this->user;
             $appPath = $this->pocketbasePaths->getAppDir($this->domain);
 
-            if (this->createServiceFile($domain, $user, $appPath)) {
+            if ($this->createServiceFile($domain, $user, $appPath)) {
                 echo "Service file creation successful.\n";
             } else {
                 echo "Service file creation failed.\n";
