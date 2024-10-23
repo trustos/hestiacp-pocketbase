@@ -102,7 +102,11 @@ class PocketbaseUtil
             ["unzip", "-o", $zipFile, "-d", $destination],
             $result
         );
-        return $result->code === 0;
+        if ($result->code !== 0) {
+            error_log("Unzip failed. Output: " . $result->text);
+            return false;
+        }
+        return true;
     }
 
     public function deleteFile(string $file)
