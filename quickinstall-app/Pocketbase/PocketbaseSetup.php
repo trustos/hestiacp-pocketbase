@@ -135,6 +135,11 @@ class PocketbaseSetup extends BaseSetup
         $this->pocketbaseUtils->createDir(
             $this->pocketbasePaths->getAppDir($this->domain)
         );
+
+        $this->appcontext->runUser("v-change-fs-file-permission", [
+            $this->pocketbasePaths->getAppDir($this->domain),
+            "0755",
+        ]);
     }
 
     public function createConfDir()
