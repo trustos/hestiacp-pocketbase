@@ -82,10 +82,10 @@ class PocketbaseSetup extends BaseSetup
             // $this->createSystemdService($options);
             // Example usage
             $domain = $this->domain;
-            $user = $this->user;
+            $user = $this->appcontext->user();
             $appPath = $this->pocketbasePaths->getAppDir($this->domain);
 
-            if ($this->createServiceFile($domain, $user, $appPath)) {
+            if ($this->createServiceFile($options, $domain, $user, $appPath)) {
                 echo "Service file creation successful.\n";
             } else {
                 echo "Service file creation failed.\n";
@@ -255,39 +255,41 @@ class PocketbaseSetup extends BaseSetup
         $this->pocketbaseUtils->deleteFile($finalZipFile);
     }
 
-    function generateServiceFileContent($domain, $user, $appPath)
-    {
-        return "[Unit]
-    Description=PocketBase service for $domain
-    After=network.target
+    // function generateServiceFileContent($domain, $user, $appPath)
+    // {
+    //     return "[Unit]
+    // Description=PocketBase service for $domain
+    // After=network.target
 
-    [Service]
-    Type=simple
-    User=$user
-    WorkingDirectory=$appPath
-    ExecStart=$appPath/pocketbase serve --http=$domain:8090
-    Restart=on-failure
+    // [Service]
+    // Type=simple
+    // User=$user
+    // WorkingDirectory=$appPath
+    // ExecStart=$appPath/pocketbase serve --http=$domain:8090
+    // Restart=on-failure
 
-    [Install]
-    WantedBy=multi-user.target
-    ";
-    }
+    // [Install]
+    // WantedBy=multi-user.target
+    // ";
+    // }
 
     // Function to create the service file
-    function createServiceFile($domain, $user, $appPath)
+    private function createServiceFile($options, $domain, $user, $appPath)
     {
-        $serviceFileName = "pocketbase-$domain.service";
-        $servicePath = "/etc/systemd/system/$serviceFileName";
+        $port = trim($options["port"] ?? "8090");
 
-        $content = $this->generateServiceFileContent($domain, $user, $appPath);
+        $result = null;
+        $this->appcontext->runUser(
+            "v-add-pocketbase-service",
+            [$user, $domain, $port],
+            $result
+        );
 
-        // Use file_put_contents to write the content directly
-        if (file_put_contents($servicePath, $content) !== false) {
-            echo "Service file created successfully at $servicePath\n";
+        if ($result && $result->code === 0) {
+            echo "Service file creation successful.\n";
             return true;
         } else {
-            echo "Failed to create service file at $servicePath\n";
-            error_log("Failed to create service file at $servicePath");
+            echo "Service file creation failed.\n";
             return false;
         }
     }

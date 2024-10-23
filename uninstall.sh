@@ -32,6 +32,10 @@ handle_error() {
 sudo rm -rf /usr/local/hestia/web/src/app/WebApp/Installers/Pocketbase || handle_error "Failed to remove QuickInstall App"
 echo -e "${START} Removed QuickInstall App ✅"
 
+# Remove pm2 manager
+sudo rm /usr/local/hestia/bin/v-add-pocketbase-service || handle_error "Failed to remove v-add-pocketbase-service"
+echo -e "${START} Removed pocketbase service from /usr/local/hestia/bin ✅"
+
 # Remove Templates
 sudo rm /usr/local/hestia/data/templates/web/nginx/Pocketbase.tpl || handle_error "Failed to remove template Pocketbase.tpl"
 sudo rm /usr/local/hestia/data/templates/web/nginx/Pocketbase.stpl || handle_error "Failed to remove template Pocketbase.stpl"

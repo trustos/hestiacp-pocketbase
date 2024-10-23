@@ -1,0 +1,99 @@
+#!/bin/bash
+# info: add pocketbase service
+# options: USER DOMAIN PORT
+#
+# example: v-add-pocketbase-service admin domain.com 8090
+#
+# This function creates and enables a systemd service for PocketBase
+#----------------------------------------------------------#
+#                Variables & Functions                       #
+#----------------------------------------------------------#
+
+# Argument definition
+user=$1
+domain=$2
+port=$3
+
+# Includes
+# shellcheck source=/etc/hestiacp/hestia.conf
+source /etc/hestiacp/hestia.conf
+# shellcheck source=/usr/local/hestia/func/main.sh
+source $HESTIA/func/main.sh
+# shellcheck source=/usr/local/hestia/func/domain.sh
+source $HESTIA/func/domain.sh
+# load config file
+source_conf "$HESTIA/conf/hestia.conf"
+
+# Additional argument formatting
+format_domain
+
+#----------------------------------------------------------#
+#                    Verifications                          #
+#----------------------------------------------------------#
+
+check_args '3' "$#" 'USER DOMAIN PORT'
+is_format_valid 'user' 'domain'
+is_object_valid 'user' 'USER' "$user"
+is_object_unsuspended 'user' 'USER' "$user"
+
+is_dir_symlink "$HOMEDIR/$user/web"
+is_dir_symlink "$HOMEDIR/$user/web/$domain"
+
+is_base_domain_owner "$domain"
+
+# Perform verification if read-only mode is enabled
+check_hestia_demo_mode
+
+#----------------------------------------------------------#
+#                       Action                              #
+#----------------------------------------------------------#
+
+# Define service file path
+service_name="pocketbase-$domain"
+service_path="/etc/systemd/system/$service_name.service"
+
+# Create service file content
+cat > "$service_path" << EOF
+[Unit]
+Description=PocketBase service for $domain
+After=network.target
+
+[Service]
+Type=simple
+User=$user
+WorkingDirectory=$HOMEDIR/$user/web/$domain/private/pocketbase
+ExecStart=$HOMEDIR/$user/web/$domain/private/pocketbase/pocketbase serve --http=127.0.0.1:$port
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Set correct permissions
+chmod 644 "$service_path"
+
+# Reload systemd
+if systemctl daemon-reload; then
+    $BIN/v-log-action "$user" "Info" "Web" "Reloaded systemd configuration for $domain."
+else
+    $BIN/v-log-action "$user" "Error" "Web" "Failed to reload systemd configuration for $domain."
+    exit 1
+fi
+
+# Enable and start service
+if systemctl enable "$service_name" && systemctl start "$service_name"; then
+    $BIN/v-log-action "$user" "Info" "Web" "Started PocketBase service for $domain."
+else
+    $BIN/v-log-action "$user" "Error" "Web" "Failed to start PocketBase service for $domain."
+    exit 1
+fi
+
+#----------------------------------------------------------#
+#                       Hestia                              #
+#----------------------------------------------------------#
+
+# Logging
+$BIN/v-log-action "$user" "Info" "Web" "Added PocketBase service (Domain: $domain, Port: $port)."
+log_event "$OK" "$ARGUMENTS"
+
+exit

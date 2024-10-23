@@ -48,6 +48,10 @@ echo -e "${START} Copy Templates ✅"
 sudo chmod 644 /usr/local/hestia/data/templates/web/nginx/Pocketbase.tpl || handle_error "Failed to change permissions for Pocketbase.tpl"
 sudo chmod 644 /usr/local/hestia/data/templates/web/nginx/Pocketbase.stpl || handle_error "Failed to change permissions for Pocketbase.stpl"
 
+# Add pocketbase service
+sudo cp bin/v-add-pocketbase-service /usr/local/hestia/bin || handle_error "Failed to copy v-add-pocketbase-service"
+sudo chmod 755 /usr/local/hestia/bin/v-add-pocketbase-service || handle_error "Failed to change permissions for v-add-pocketbase-service"
+
 # Change permissions
 sudo chmod -R 644 /usr/local/hestia/web/src/app/WebApp/Installers/Pocketbase/ || handle_error "Failed to change permissions for Pocketbase directory"
 sudo chmod 755 /usr/local/hestia/web/src/app/WebApp/Installers/Pocketbase || handle_error "Failed to change permissions for Pocketbase directory"
