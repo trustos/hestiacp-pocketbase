@@ -198,7 +198,7 @@ class PocketbaseSetup extends BaseSetup
         }
 
         if (!$this->pocketbaseUtils->downloadFile($url, $tempZipFile)) {
-            unlink($tempZipFile); // Clean up the temporary file
+            // unlink($tempZipFile); // Clean up the temporary file
             throw new \Exception("Failed to download Pocketbase");
         }
 
