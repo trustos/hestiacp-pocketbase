@@ -287,6 +287,7 @@ class PocketbaseSetup extends BaseSetup
             return true;
         } else {
             echo "Failed to create service file at $servicePath\n";
+            error_log("Failed to create service file at $servicePath");
             return false;
         }
     }
