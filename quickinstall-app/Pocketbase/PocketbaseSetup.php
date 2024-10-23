@@ -219,7 +219,9 @@ class PocketbaseSetup extends BaseSetup
             );
             error_log(
                 "Destination directory writable: " .
-                    (is_writable(dirname($finalZipFile)) ? "Yes" : "No")
+                    (is_writable(dirname($finalZipFile)) ? "Yes" : "No") .
+                    "File destination: " .
+                    $finalZipFile
             );
             unlink($tempZipFile); // Clean up the temporary file
             throw new \Exception(
