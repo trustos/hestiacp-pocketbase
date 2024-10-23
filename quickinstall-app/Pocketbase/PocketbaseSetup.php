@@ -250,7 +250,7 @@ class PocketbaseSetup extends BaseSetup
         $templateReplaceVars = [
             $this->domain,
             $this->pocketbasePaths->getAppDir($this->domain),
-            $this->appcontext->getUser(),
+            $this->appcontext->user(),
         ];
 
         $data = $this->pocketbaseUtils->parseTemplate(
