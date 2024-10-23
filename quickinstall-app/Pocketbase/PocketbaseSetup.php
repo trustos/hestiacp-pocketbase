@@ -229,12 +229,26 @@ class PocketbaseSetup extends BaseSetup
             );
         }
 
+        // Check zip file size
+        $zipSize = filesize($finalZipFile);
+        error_log("Zip file size: $zipSize bytes");
+
         if (!$this->pocketbaseUtils->unzipFile($finalZipFile, $appDir)) {
+            error_log("Failed to unzip file: $finalZipFile");
+            // Don't delete the zip file here to allow for manual inspection
             throw new \Exception("Failed to unzip Pocketbase");
         }
 
-        $this->pocketbaseUtils->deleteFile($finalZipFile);
+        if (!file_exists($executable)) {
+            throw new \Exception(
+                "Pocketbase executable not found after extraction"
+            );
+        }
+
         $this->pocketbaseUtils->makeExecutable($executable);
+
+        // Only delete the zip file if everything was successful
+        $this->pocketbaseUtils->deleteFile($finalZipFile);
     }
 
     private function createSystemdService(array $options)

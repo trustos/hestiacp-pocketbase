@@ -96,18 +96,42 @@ class PocketbaseUtil
 
     public function unzipFile(string $zipFile, string $destination)
     {
-        $result = null;
-        $this->appcontext->runUser(
-            "v-run-cli-cmd",
-            ["unzip", "-o", $zipFile, "-d", $destination],
-            $result
-        );
-        if ($result->code !== 0) {
-            error_log("Unzip failed. Output: " . $result->text);
+        if (!file_exists($zipFile)) {
+            error_log("Zip file does not exist: $zipFile");
             return false;
         }
+
+        $zip = new \ZipArchive();
+        $res = $zip->open($zipFile);
+        if ($res !== true) {
+            error_log("Failed to open zip file. Error code: $res");
+            return false;
+        }
+
+        if (!$zip->extractTo($destination)) {
+            error_log("Failed to extract zip contents to $destination");
+            $zip->close();
+            return false;
+        }
+
+        $zip->close();
         return true;
     }
+
+    // public function unzipFile(string $zipFile, string $destination)
+    // {
+    //     $result = null;
+    //     $this->appcontext->runUser(
+    //         "v-run-cli-cmd",
+    //         ["unzip", "-o", $zipFile, "-d", $destination],
+    //         $result
+    //     );
+    //     if ($result->code !== 0) {
+    //         error_log("Unzip failed. Output: " . $result->text);
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     public function deleteFile(string $file)
     {
