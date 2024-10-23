@@ -26,7 +26,7 @@ class PocketbaseUtil
             ]);
             $this->appcontext->runUser(
                 "v-add-fs-directory",
-                [$this->appcontext->getUser(), $dir],
+                [$dir],
                 $output,
                 $return_var
             );
