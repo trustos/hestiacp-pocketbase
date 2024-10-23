@@ -168,11 +168,11 @@ class PocketbaseSetup extends BaseSetup
         $url =
             "https://github.com/pocketbase/pocketbase/releases/download/{$version}/pocketbase_" .
             substr($version, 1) .
-            "_linux_{$osArch}.tar.gz";
+            "_linux_{$osArch}.zip";
         error_log("Attempting to download PocketBase from: " . $url);
 
         $appDir = $this->pocketbasePaths->getAppDir($this->domain);
-        $finalTarFile = $appDir . "pocketbase.tar.gz";
+        $finalZipFile = $appDir . "pocketbase.zip";
         $executable = $appDir . "pocketbase";
 
         // Ensure the app directory exists
@@ -190,42 +190,58 @@ class PocketbaseSetup extends BaseSetup
             throw new \Exception("Failed to download Pocketbase");
         }
 
+        // Check if the content is actually a zip file
+        if (substr($fileContent, 0, 4) !== "\x50\x4b\x03\x04") {
+            error_log("Downloaded content is not a valid ZIP file");
+            throw new \Exception("Invalid download: not a ZIP file");
+        }
+
         // Save the content to a temporary file
-        $tempTarFile = $this->saveTempFile($fileContent);
+        $tempZipFile = $this->saveTempFile($fileContent);
 
         try {
             $moveResult = $this->pocketbaseUtils->moveFile(
-                $tempTarFile,
-                $finalTarFile
+                $tempZipFile,
+                $finalZipFile
             );
             if ($moveResult === false) {
                 throw new \Exception("Move operation failed");
             }
         } catch (\Exception $e) {
             error_log(
-                "Failed to move Pocketbase tar file. Error: " . $e->getMessage()
+                "Failed to move Pocketbase zip file. Error: " . $e->getMessage()
             );
-            $this->pocketbaseUtils->deleteFile($tempTarFile);
+            $this->pocketbaseUtils->deleteFile($tempZipFile);
             throw new \Exception(
-                "Failed to move Pocketbase tar file: " . $e->getMessage()
+                "Failed to move Pocketbase zip file: " . $e->getMessage()
             );
         }
 
-        if (!file_exists($finalTarFile)) {
+        if (!file_exists($finalZipFile)) {
             throw new \Exception(
-                "Tar file not found at destination after move: $finalTarFile"
+                "Zip file not found at destination after move: $finalZipFile"
             );
         }
 
-        // Check tar file size
-        $tarSize = filesize($finalTarFile);
-        error_log("Tar file size: $tarSize bytes");
+        // Check zip file size
+        $zipSize = filesize($finalZipFile);
+        error_log("Zip file size: $zipSize bytes");
 
-        if (!$this->pocketbaseUtils->unzipFile($finalTarFile, $appDir)) {
-            error_log("Failed to extract file: $finalTarFile");
-            // Don't delete the tar file here to allow for manual inspection
+        // Use PHP's ZipArchive to extract
+        $zip = new \ZipArchive();
+        $res = $zip->open($finalZipFile);
+        if ($res !== true) {
+            error_log("Failed to open zip file. Error code: $res");
+            throw new \Exception("Failed to open Pocketbase zip file");
+        }
+
+        if (!$zip->extractTo($appDir)) {
+            error_log("Failed to extract zip contents to $appDir");
+            $zip->close();
             throw new \Exception("Failed to extract Pocketbase");
         }
+
+        $zip->close();
 
         if (!file_exists($executable)) {
             throw new \Exception(
@@ -235,8 +251,8 @@ class PocketbaseSetup extends BaseSetup
 
         $this->pocketbaseUtils->makeExecutable($executable);
 
-        // Only delete the tar file if everything was successful
-        $this->pocketbaseUtils->deleteFile($finalTarFile);
+        // Only delete the zip file if everything was successful
+        $this->pocketbaseUtils->deleteFile($finalZipFile);
     }
 
     private function createSystemdService(array $options)

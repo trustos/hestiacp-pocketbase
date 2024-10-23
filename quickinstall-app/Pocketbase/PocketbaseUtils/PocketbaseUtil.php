@@ -56,41 +56,59 @@ class PocketbaseUtil
         return $data;
     }
 
+    // public function downloadFile(string $url, string $destination)
+    // {
+    //     $cmd = sprintf("curl -L -s %s", escapeshellarg($url));
+
+    //     $output = [];
+    //     $return_var = 0;
+    //     exec($cmd, $output, $return_var);
+
+    //     if ($return_var !== 0) {
+    //         $error_message =
+    //             "Failed to download file. Command: $cmd\nOutput: " .
+    //             implode("\n", $output);
+    //         $this->appcontext->runUser("v-log-action", [
+    //             "Error",
+    //             "Web",
+    //             $error_message,
+    //         ]);
+    //         error_log($error_message);
+    //         return false;
+    //     }
+
+    //     $content = implode("\n", $output);
+    //     if (empty($content)) {
+    //         $error_message =
+    //             "File download appears to have failed. Content is empty.";
+    //         $this->appcontext->runUser("v-log-action", [
+    //             "Error",
+    //             "Web",
+    //             $error_message,
+    //         ]);
+    //         error_log($error_message);
+    //         return false;
+    //     }
+
+    //     error_log("File successfully downloaded");
+    //     return $content;
+    // }
+    //
+
     public function downloadFile(string $url, string $destination)
     {
-        $cmd = sprintf("curl -L -s %s", escapeshellarg($url));
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $content = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
-        $output = [];
-        $return_var = 0;
-        exec($cmd, $output, $return_var);
-
-        if ($return_var !== 0) {
-            $error_message =
-                "Failed to download file. Command: $cmd\nOutput: " .
-                implode("\n", $output);
-            $this->appcontext->runUser("v-log-action", [
-                "Error",
-                "Web",
-                $error_message,
-            ]);
-            error_log($error_message);
+        if ($httpCode != 200 || empty($content)) {
+            error_log("Failed to download file. HTTP Code: $httpCode");
             return false;
         }
 
-        $content = implode("\n", $output);
-        if (empty($content)) {
-            $error_message =
-                "File download appears to have failed. Content is empty.";
-            $this->appcontext->runUser("v-log-action", [
-                "Error",
-                "Web",
-                $error_message,
-            ]);
-            error_log($error_message);
-            return false;
-        }
-
-        error_log("File successfully downloaded");
         return $content;
     }
 
