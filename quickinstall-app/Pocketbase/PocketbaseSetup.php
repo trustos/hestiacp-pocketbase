@@ -172,8 +172,8 @@ class PocketbaseSetup extends BaseSetup
         error_log("Attempting to download PocketBase from: " . $url);
 
         $appDir = $this->pocketbasePaths->getAppDir($this->domain);
-        $finalZipFile = $appDir . "/pocketbase.zip";
-        $executable = $appDir . "/pocketbase";
+        $finalZipFile = $appDir . "pocketbase.zip";
+        $executable = $appDir . "pocketbase";
 
         // Ensure the app directory exists
         if (!is_dir($appDir)) {
