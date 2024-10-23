@@ -45,6 +45,9 @@ fi
 sudo cp templates/* /usr/local/hestia/data/templates/web/nginx || handle_error "Failed to copy templates"
 echo -e "${START} Copy Templates ✅"
 
+sudo chmod 644 /usr/local/hestia/data/templates/web/nginx/Pocketbase.tpl || handle_error "Failed to change permissions for Pocketbase.tpl"
+sudo chmod 644 /usr/local/hestia/data/templates/web/nginx/Pocketbase.stpl || handle_error "Failed to change permissions for Pocketbase.stpl"
+
 # Change permissions
 sudo chmod -R 644 /usr/local/hestia/web/src/app/WebApp/Installers/Pocketbase/ || handle_error "Failed to change permissions for Pocketbase directory"
 sudo chmod 755 /usr/local/hestia/web/src/app/WebApp/Installers/Pocketbase || handle_error "Failed to change permissions for Pocketbase directory"
