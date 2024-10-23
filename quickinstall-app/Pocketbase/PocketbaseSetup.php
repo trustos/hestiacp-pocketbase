@@ -84,11 +84,11 @@ class PocketbaseSetup extends BaseSetup
             $this->createAppConfig($options);
             $this->startPocketbaseService();
         } catch (\Exception $e) {
+            error_log("Pocketbase installation failed: " . $e->getMessage());
             $this->appcontext->runUser("v-log-action", [
                 "Error",
                 "Web",
-                "Failed to perform Pocketbase installation for {$this->domain}: " .
-                $e->getMessage(),
+                "Failed to perform Pocketbase installation for {$this->domain}: " . $e->getMessage(),
             ]);
             throw $e;
         }
@@ -135,6 +135,11 @@ class PocketbaseSetup extends BaseSetup
         $this->pocketbaseUtils->createDir(
             $this->pocketbasePaths->getAppDir($this->domain)
         );
+
+        // Ensure the directory is writable
+        if (!is_writable($appDir)) {
+            $this->pocketbaseUtils->changePermissions($appDir, "0755");
+        }
     }
 
     public function createConfDir()
@@ -197,35 +202,43 @@ class PocketbaseSetup extends BaseSetup
             throw new \Exception("Failed to download Pocketbase");
         }
 
-        try {
-            $moveResult = $this->pocketbaseUtils->moveFile(
-                $tempZipFile,
-                $finalZipFile
-            );
-            if ($moveResult === false) {
-                throw new \Exception("Move operation failed");
-            }
-        } catch (\Exception $e) {
-            error_log(
-                "Failed to move Pocketbase zip file. Error: " . $e->getMessage()
-            );
-            error_log(
-                "Temp file exists: " .
-                    (file_exists($tempZipFile) ? "Yes" : "No")
-            );
-            error_log(
-                "Temp file size: " .
-                    (file_exists($tempZipFile) ? filesize($tempZipFile) : "N/A")
-            );
-            error_log(
-                "Destination directory writable: " .
-                    (is_writable(dirname($finalZipFile)) ? "Yes" : "No")
-            );
-            unlink($tempZipFile); // Clean up the temporary file
-            throw new \Exception(
-                "Failed to move Pocketbase zip file: " . $e->getMessage()
-            );
-        }
+        $moveResult = $this->pocketbaseUtils->moveFile(
+            $tempZipFile,
+            $finalZipFile
+        );
+        if (!$moveResult) {
+            throw new \Exception("Failed to move Pocketbase zip file");
+        // }
+
+        // try {
+        //     $moveResult = $this->pocketbaseUtils->moveFile(
+        //         $tempZipFile,
+        //         $finalZipFile
+        //     );
+        //     if ($moveResult === false) {
+        //         throw new \Exception("Move operation failed");
+        //     }
+        // } catch (\Exception $e) {
+        //     error_log(
+        //         "Failed to move Pocketbase zip file. Error: " . $e->getMessage()
+        //     );
+        //     error_log(
+        //         "Temp file exists: " .
+        //             (file_exists($tempZipFile) ? "Yes" : "No")
+        //     );
+        //     error_log(
+        //         "Temp file size: " .
+        //             (file_exists($tempZipFile) ? filesize($tempZipFile) : "N/A")
+        //     );
+        //     error_log(
+        //         "Destination directory writable: " .
+        //             (is_writable(dirname($finalZipFile)) ? "Yes" : "No")
+        //     );
+        //     unlink($tempZipFile); // Clean up the temporary file
+        //     throw new \Exception(
+        //         "Failed to move Pocketbase zip file: " . $e->getMessage()
+        //     );
+        // }
 
         if (!file_exists($finalZipFile)) {
             throw new \Exception(

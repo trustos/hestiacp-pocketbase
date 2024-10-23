@@ -35,12 +35,11 @@ class PocketbaseUtil
                 $result
             )
         ) {
-            throw new \Exception(
-                "Error updating file in: " . $fileA . " " . $result->text
-            );
+            error_log("Error moving file: " . $result->text);
+            return false;
         }
 
-        return $result;
+        return true;
     }
 
     public function parseTemplate($template, $search, $replace): array
@@ -111,6 +110,17 @@ class PocketbaseUtil
     {
         $result = null;
         $this->appcontext->runUser("v-delete-fs-file", [$file], $result);
+        return $result->code === 0;
+    }
+
+    public function changePermissions(string $path, string $permissions)
+    {
+        $result = null;
+        $this->appcontext->runUser(
+            "v-change-fs-file-permission",
+            [$path, $permissions],
+            $result
+        );
         return $result->code === 0;
     }
 
