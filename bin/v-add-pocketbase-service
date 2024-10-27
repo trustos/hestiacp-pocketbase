@@ -13,6 +13,7 @@
 user=$1
 domain=$2
 port=$3
+executable=${4:-pocketbase}  # Default to pocketbase if not specified
 
 # Includes
 # shellcheck source=/etc/hestiacp/hestia.conf
@@ -92,7 +93,7 @@ After=network.target
 Type=simple
 User=$user
 WorkingDirectory=$HOMEDIR/$user/web/$domain/private/pocketbase
-ExecStart=$HOMEDIR/$user/web/$domain/private/pocketbase/pocketbase serve --http=127.0.0.1:$port
+ExecStart=$HOMEDIR/$user/web/$domain/private/pocketbase/$executable serve --http=127.0.0.1:$port
 Restart=on-failure
 RestartSec=5
 StandardOutput=append:/var/log/pocketbase-$domain.log

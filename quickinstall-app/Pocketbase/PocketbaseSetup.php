@@ -28,6 +28,14 @@ class PocketbaseSetup extends BaseSetup
     protected $appname = "Pocketbase";
     protected $config = [
         "form" => [
+            "installation_type" => [
+                "type" => "select",
+                "options" => [
+                    "pocketbase" => "PocketBase",
+                    "pocket_admin" => "Pocket Admin",
+                ],
+                "value" => "pocketbase",
+            ],
             "pocketbase_version" => [
                 "type" => "select",
                 "options" => [
@@ -39,6 +47,15 @@ class PocketbaseSetup extends BaseSetup
                     "v0.17.7",
                 ],
                 "value" => "v0.22.22",
+            ],
+            "pocket_admin_version" => [
+                "type" => "select",
+                "options" => [
+                    "v0.0.1",
+                    // Add more versions as they become available
+                ],
+                "value" => "v0.0.1",
+                "visible" => "installation_type === 'pocket_admin'",
             ],
             "port" => [
                 "type" => "text",
@@ -162,7 +179,17 @@ class PocketbaseSetup extends BaseSetup
 
     private function downloadPocketbase(array $options)
     {
-        $version = $options["pocketbase_version"] ?? "v0.22.22";
+        $installationType = $options["installation_type"] ?? "pocketbase";
+
+        if ($installationType === "pocketbase") {
+            $version = $options["pocketbase_version"] ?? "v0.22.22";
+            $baseUrl = "https://github.com/pocketbase/pocketbase/releases/download/{$version}/pocketbase_";
+            $versionNumber = substr($version, 1); // Remove 'v' prefix
+        } else {
+            $version = $options["pocket_admin_version"] ?? "v0.0.1";
+            $baseUrl = "https://github.com/trustos/pocket-admin/releases/download/{$version}/pocket-admin_";
+            $versionNumber = substr($version, 1); // Remove 'v' prefix
+        }
 
         // Determine system architecture
         $arch = php_uname("m");
@@ -175,15 +202,27 @@ class PocketbaseSetup extends BaseSetup
             $osArch = "arm64";
         }
 
-        $url =
-            "https://github.com/pocketbase/pocketbase/releases/download/{$version}/pocketbase_" .
-            substr($version, 1) .
-            "_linux_{$osArch}.zip";
-        error_log("Attempting to download PocketBase from: " . $url);
+        $url = $baseUrl . $versionNumber . "_linux_{$osArch}.zip";
+        error_log(
+            "Attempting to download " .
+                ($installationType === "pocketbase"
+                    ? "PocketBase"
+                    : "Pocket Admin") .
+                " from: " .
+                $url
+        );
 
         $appDir = $this->pocketbasePaths->getAppDir($this->domain);
-        $finalZipFile = $appDir . "pocketbase.zip";
-        $executable = $appDir . "pocketbase";
+        $finalZipFile =
+            $appDir .
+            ($installationType === "pocketbase"
+                ? "pocketbase.zip"
+                : "pocket-admin.zip");
+        $executable =
+            $appDir .
+            ($installationType === "pocketbase"
+                ? "pocketbase"
+                : "pocket-admin");
 
         // Ensure the app directory exists
         if (!is_dir($appDir)) {
@@ -255,33 +294,18 @@ class PocketbaseSetup extends BaseSetup
         $this->pocketbaseUtils->deleteFile($finalZipFile);
     }
 
-    // function generateServiceFileContent($domain, $user, $appPath)
-    // {
-    //     return "[Unit]
-    // Description=PocketBase service for $domain
-    // After=network.target
-
-    // [Service]
-    // Type=simple
-    // User=$user
-    // WorkingDirectory=$appPath
-    // ExecStart=$appPath/pocketbase serve --http=$domain:8090
-    // Restart=on-failure
-
-    // [Install]
-    // WantedBy=multi-user.target
-    // ";
-    // }
-
     // Function to create the service file
     private function createServiceFile($options, $domain, $user, $appPath)
     {
         $port = trim($options["port"] ?? "8090");
+        $installationType = $options["installation_type"] ?? "pocketbase";
+        $executableName =
+            $installationType === "pocketbase" ? "pocketbase" : "pocket-admin";
 
         $result = null;
         $this->appcontext->runUser(
             "v-add-pocketbase-service",
-            [$domain, $port],
+            [$domain, $port, $executableName],
             $result
         );
 
