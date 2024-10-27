@@ -90,6 +90,12 @@ class PocketbaseSetup extends BaseSetup
         return true;
     }
 
+    private function getPort(array $options): string
+    {
+        $port = trim($options["port"] ?? "");
+        return empty($port) ? "8090" : $port;
+    }
+
     private function performInstallation(array $options)
     {
         try {
@@ -101,6 +107,9 @@ class PocketbaseSetup extends BaseSetup
             $domain = $this->domain;
             $user = $this->appcontext->user();
             $appPath = $this->pocketbasePaths->getAppDir($this->domain);
+
+            // Ensure port is set
+            $options["port"] = $this->getPort($options);
 
             if ($this->createServiceFile($options, $domain, $user, $appPath)) {
                 echo "Service file creation successful.\n";
@@ -123,7 +132,8 @@ class PocketbaseSetup extends BaseSetup
 
     public function createAppProxyTemplates(array $options = null)
     {
-        $tplReplace = [trim($options["port"] ?? "8090")];
+        $port = $this->getPort($options);
+        $tplReplace = [$port];
 
         $proxyData = $this->pocketbaseUtils->parseTemplate(
             $this->pocketbasePaths->getPocketbaseProxyTemplate(),
@@ -143,7 +153,8 @@ class PocketbaseSetup extends BaseSetup
     {
         $configContent = [];
 
-        $configContent[] = "PORT=" . trim($options["port"] ?? "8090");
+        $port = $this->getPort($options);
+        $configContent[] = "PORT=" . $port;
         $configContent[] =
             "VERSION=" . trim($options["pocketbase_version"] ?? "v0.22.22");
 
@@ -297,7 +308,7 @@ class PocketbaseSetup extends BaseSetup
     // Function to create the service file
     private function createServiceFile($options, $domain, $user, $appPath)
     {
-        $port = trim($options["port"] ?? "8090");
+        $port = $this->getPort($options);
         $installationType = $options["installation_type"] ?? "pocketbase";
         $executableName =
             $installationType === "pocketbase" ? "pocketbase" : "pocket-admin";
@@ -317,33 +328,4 @@ class PocketbaseSetup extends BaseSetup
             return false;
         }
     }
-
-    // private function createSystemdService(array $options)
-    // {
-    //     $templateReplaceVars = [
-    //         $this->domain,
-    //         $this->pocketbasePaths->getAppDir($this->domain),
-    //         $this->appcontext->user(),
-    //     ];
-
-    //     $data = $this->pocketbaseUtils->parseTemplate(
-    //         $this->pocketbasePaths->getPocketbaseSystemdTemplate(),
-    //         self::TEMPLATE_SYSTEMD_VARS,
-    //         $templateReplaceVars
-    //     );
-    //     $tmpFile = $this->saveTempFile(implode($data));
-
-    //     $serviceName = "pocketbase-{$this->domain}.service";
-    //     $serviceFile = "/etc/systemd/system/{$serviceName}";
-
-    //     $this->pocketbaseUtils->moveFile($tmpFile, $serviceFile);
-    //     $this->pocketbaseUtils->reloadSystemd();
-    // }
-
-    // private function startPocketbaseService()
-    // {
-    //     $serviceName = "pocketbase-{$this->domain}";
-    //     $this->pocketbaseUtils->startService($serviceName);
-    //     $this->pocketbaseUtils->enableService($serviceName);
-    // }
 }
