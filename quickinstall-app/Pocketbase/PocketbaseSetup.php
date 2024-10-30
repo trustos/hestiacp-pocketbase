@@ -51,10 +51,10 @@ class PocketbaseSetup extends BaseSetup
             "pocket_admin_version" => [
                 "type" => "select",
                 "options" => [
-                    "v0.0.1",
+                    "v0.0.2",
                     // Add more versions as they become available
                 ],
-                "value" => "v0.0.1",
+                "value" => "v0.0.2",
                 "visible" => "installation_type === 'pocket_admin'",
             ],
             "port" => [
@@ -197,7 +197,7 @@ class PocketbaseSetup extends BaseSetup
             $baseUrl = "https://github.com/pocketbase/pocketbase/releases/download/{$version}/pocketbase_";
             $versionNumber = substr($version, 1); // Remove 'v' prefix
         } else {
-            $version = $options["pocket_admin_version"] ?? "v0.0.1";
+            $version = $options["pocket_admin_version"] ?? "v0.0.2";
             $baseUrl = "https://github.com/trustos/pocket-admin/releases/download/{$version}/pocket-admin_";
             $versionNumber = substr($version, 1); // Remove 'v' prefix
         }
